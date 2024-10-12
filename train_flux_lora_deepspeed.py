@@ -141,7 +141,8 @@ def main():
     vae.requires_grad_(False)
     t5.requires_grad_(False)
     clip.requires_grad_(False)
-    dit = dit.to(torch.float32)
+    # This line is not needed and crashes the code, everything works without it
+    # dit = dit.to(torch.float32)
     dit.train()
     optimizer_cls = torch.optim.AdamW
     for n, param in dit.named_parameters():

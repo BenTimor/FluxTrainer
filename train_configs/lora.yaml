@@ -1,0 +1,37 @@
+model_name: "flux-dev"
+data_config:
+  train_batch_size: 1
+  num_workers: 4
+  img_size: 512
+  img_dir: /home/user/imagesJSON/
+  random_ratio: false # support multi crop preprocessing
+report_to: wandb
+train_batch_size: 1
+output_dir: lora/
+max_train_steps: 2000
+learning_rate: 1e-2
+lr_scheduler: linear
+lr_warmup_steps: 10
+adam_beta1: 0.9
+adam_beta2: 0.999
+adam_weight_decay: 0.01
+adam_epsilon: 1e-8
+max_grad_norm: 1.0
+logging_dir: logs
+mixed_precision: "bf16"
+checkpointing_steps: 500
+checkpoints_total_limit: 2
+tracker_project_name: mylora
+resume_from_checkpoint: latest
+gradient_accumulation_steps: 2
+rank: 16
+single_blocks: "1,2,3,4"
+double_blocks: null
+disable_sampling: false
+sample_every: 250 # sample every this many steps
+sample_width: 512
+sample_height: 512
+sample_steps: 20
+sample_prompts:
+    - "A photo of BT person"
+    - "A photo of BT person eating a banana while riding a bike"
