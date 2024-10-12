@@ -9,7 +9,7 @@ def create_argparser():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--prompt", type=str, required=True,
+        "--prompt", type=str,
         help="The input text prompt"
     )
     parser.add_argument(
@@ -154,29 +154,39 @@ def main(args):
     image_prompt = Image.open(args.img_prompt) if args.img_prompt else None
     neg_image_prompt = Image.open(args.neg_img_prompt) if args.neg_img_prompt else None
 
-    for _ in range(args.num_images_per_prompt):
-        result = xflux_pipeline(
-            prompt=args.prompt,
-            controlnet_image=image,
-            width=args.width,
-            height=args.height,
-            guidance=args.guidance,
-            num_steps=args.num_steps,
-            seed=args.seed,
-            true_gs=args.true_gs,
-            control_weight=args.control_weight,
-            neg_prompt=args.neg_prompt,
-            timestep_to_start_cfg=args.timestep_to_start_cfg,
-            image_prompt=image_prompt,
-            neg_image_prompt=neg_image_prompt,
-            ip_scale=args.ip_scale,
-            neg_ip_scale=args.neg_ip_scale,
-        )
-        if not os.path.exists(args.save_path):
-            os.mkdir(args.save_path)
-        ind = len(os.listdir(args.save_path))
-        result.save(os.path.join(args.save_path, f"result_{ind}.png"))
-        args.seed = args.seed + 1
+    while True:
+        seed = args.seed
+        prompt = args.prompt or input("Prompt >> ")
+
+        if not prompt:
+            break
+
+        for _ in range(args.num_images_per_prompt):
+            result = xflux_pipeline(
+                prompt=prompt,
+                controlnet_image=image,
+                width=args.width,
+                height=args.height,
+                guidance=args.guidance,
+                num_steps=args.num_steps,
+                seed=seed,
+                true_gs=args.true_gs,
+                control_weight=args.control_weight,
+                neg_prompt=args.neg_prompt,
+                timestep_to_start_cfg=args.timestep_to_start_cfg,
+                image_prompt=image_prompt,
+                neg_image_prompt=neg_image_prompt,
+                ip_scale=args.ip_scale,
+                neg_ip_scale=args.neg_ip_scale,
+            )
+            if not os.path.exists(args.save_path):
+                os.mkdir(args.save_path)
+            ind = len(os.listdir(args.save_path))
+            result.save(os.path.join(args.save_path, f"result_{ind}.png"))
+            seed = seed + 1
+        
+        if args.prompt:
+            break
 
 
 if __name__ == "__main__":
