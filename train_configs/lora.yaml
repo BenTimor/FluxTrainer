@@ -33,5 +33,6 @@ sample_width: 512
 sample_height: 512
 sample_steps: 20
 sample_prompts:
-    - "A photo of BT person"
-    - "A photo of BT person eating a banana while riding a bike"
+    - "A photo of BT"
+    - "BT eating a banana while riding a bike"
+    - "BT fighting a demon on a volcano. Hell is in the background. The sky is dark."
