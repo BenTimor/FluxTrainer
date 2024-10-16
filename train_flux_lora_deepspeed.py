@@ -47,6 +47,9 @@ if is_wandb_available():
     import wandb
 
 import time
+import threading
+
+save_thread = None
 
 logger = get_logger(__name__, log_level="INFO")
 
@@ -346,9 +349,22 @@ def main():
 
                     save_path = os.path.join(args.output_dir, f"checkpoint-{global_step}")
 
-                    time_start("accelerator.save_state")
-                    accelerator.save_state(save_path)
-                    time_end("accelerator.save_state")
+                    def save_state_async():
+                        time_start("accelerator.save_state")
+                        accelerator.save_state(save_path)
+                        time_end("accelerator.save_state")
+
+                    print("Starting thread to save checkpoint")
+                    global save_thread
+
+                    if save_thread != None:
+                        time_start("Previous thread")
+                        save_thread.join()
+                        time_end("Previous thread")
+
+                    save_thread = threading.Thread(target=save_state_async)
+                    save_thread.start()
+                    print("After call to thread to save checkpoint")
 
                     time_start("accelerator.unwrap_model")
                     unwrapped_model_state = accelerator.unwrap_model(dit).state_dict()
