@@ -45,6 +45,9 @@ from src.flux.xflux_pipeline import XFluxSampler
 from image_datasets.dataset import loader
 if is_wandb_available():
     import wandb
+
+import time
+
 logger = get_logger(__name__, log_level="INFO")
 
 def get_models(name: str, device, offload: bool, is_schnell: bool):
@@ -68,6 +71,19 @@ def parse_args():
 
 
     return args.config
+
+timers = {}
+
+def time_start(label='default'):
+    timers[label] = time.time()
+    print(f"Timer '{label}' started.")
+
+def time_end(label='default'):
+    if label not in timers:
+        print(f"Timer '{label}' was not started.")
+        return
+    elapsed = time.time() - timers.pop(label)
+    print(f"Timer '{label}' ended. Elapsed time: {elapsed:.4f} seconds.")
 
 
 def main():
@@ -330,15 +346,22 @@ def main():
 
                     save_path = os.path.join(args.output_dir, f"checkpoint-{global_step}")
 
+                    time_start("accelerator.save_state")
                     accelerator.save_state(save_path)
+                    time_end("accelerator.save_state")
+
+                    time_start("accelerator.unwrap_model")
                     unwrapped_model_state = accelerator.unwrap_model(dit).state_dict()
+                    time_end("accelerator.unwrap_model")
 
                     # save checkpoint in safetensors format
+                    time_start("lorasave")
                     lora_state_dict = {k:unwrapped_model_state[k] for k in unwrapped_model_state.keys() if '_lora' in k}
                     save_file(
                         lora_state_dict,
                         os.path.join(save_path, "lora.safetensors")
                     )
+                    time_end("lorasave")
 
                     logger.info(f"Saved state to {save_path}")
 
