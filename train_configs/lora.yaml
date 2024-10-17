@@ -14,7 +14,7 @@ lr_scheduler: linear
 lr_warmup_steps: 100
 adam_beta1: 0.9
 adam_beta2: 0.999
-adam_weight_decay: 0.1
+adam_weight_decay: 0.01
 adam_epsilon: 1e-8
 max_grad_norm: 1.0
 logging_dir: logs
