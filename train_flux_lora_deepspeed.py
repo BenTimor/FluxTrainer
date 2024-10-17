@@ -47,9 +47,6 @@ if is_wandb_available():
     import wandb
 
 import time
-import threading
-
-save_thread = None
 
 logger = get_logger(__name__, log_level="INFO")
 
@@ -325,6 +322,26 @@ def main():
                             # result.save(f"{global_step}_prompt_{i}_res.png")
                         wandb.log({f"Results, step {global_step}": images})
 
+                if global_step % args.saving_lora_steps == 0:
+                    save_path = os.path.join(args.output_dir, f"lora-{global_step}")
+
+                    print("Starting to save lora")
+                    time_start("accelerator.unwrap_model")
+                    unwrapped_model_state = accelerator.unwrap_model(dit).state_dict()
+                    time_end("accelerator.unwrap_model")
+
+                    # save checkpoint in safetensors format
+                    time_start("lorasave")
+                    lora_state_dict = {k:unwrapped_model_state[k] for k in unwrapped_model_state.keys() if '_lora' in k}
+                    save_file(
+                        lora_state_dict,
+                        os.path.join(save_path, "lora.safetensors")
+                    )
+                    time_end("lorasave")
+
+                    print("Lora is saved")
+
+
                 if global_step % args.checkpointing_steps == 0:
                     if accelerator.is_main_process:
                         # _before_ saving state, check if this save would set us over the `checkpoints_total_limit`
@@ -348,36 +365,10 @@ def main():
                                     shutil.rmtree(removing_checkpoint)
 
                     save_path = os.path.join(args.output_dir, f"checkpoint-{global_step}")
-
-                    def save_state_async():
-                        time_start("accelerator.save_state")
-                        accelerator.save_state(save_path)
-                        time_end("accelerator.save_state")
-
-                    print("Starting thread to save checkpoint")
-                    global save_thread
-
-                    if save_thread != None:
-                        time_start("Previous thread")
-                        save_thread.join()
-                        time_end("Previous thread")
-
-                    save_thread = threading.Thread(target=save_state_async)
-                    save_thread.start()
-                    print("After call to thread to save checkpoint")
-
-                    time_start("accelerator.unwrap_model")
-                    unwrapped_model_state = accelerator.unwrap_model(dit).state_dict()
-                    time_end("accelerator.unwrap_model")
-
-                    # save checkpoint in safetensors format
-                    time_start("lorasave")
-                    lora_state_dict = {k:unwrapped_model_state[k] for k in unwrapped_model_state.keys() if '_lora' in k}
-                    save_file(
-                        lora_state_dict,
-                        os.path.join(save_path, "lora.safetensors")
-                    )
-                    time_end("lorasave")
+                    
+                    time_start("accelerator.save_state")
+                    accelerator.save_state(save_path)
+                    time_end("accelerator.save_state")
 
                     logger.info(f"Saved state to {save_path}")
 
