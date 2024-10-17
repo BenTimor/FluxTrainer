@@ -324,6 +324,9 @@ def main():
 
                 if global_step % args.saving_lora_steps == 0:
                     save_path = os.path.join(args.output_dir, f"lora-{global_step}")
+                    
+                    if not os.path.exists(save_path):
+                        os.mkdir(save_path)
 
                     print("Starting to save lora")
                     time_start("accelerator.unwrap_model")
@@ -365,7 +368,9 @@ def main():
                                     shutil.rmtree(removing_checkpoint)
 
                     save_path = os.path.join(args.output_dir, f"checkpoint-{global_step}")
-                    
+                    if not os.path.exists(save_path):
+                        os.mkdir(save_path)
+
                     time_start("accelerator.save_state")
                     accelerator.save_state(save_path)
                     time_end("accelerator.save_state")
