@@ -368,8 +368,6 @@ def main():
                                     shutil.rmtree(removing_checkpoint)
 
                     save_path = os.path.join(args.output_dir, f"checkpoint-{global_step}")
-                    if not os.path.exists(save_path):
-                        os.mkdir(save_path)
 
                     time_start("accelerator.save_state")
                     accelerator.save_state(save_path)
