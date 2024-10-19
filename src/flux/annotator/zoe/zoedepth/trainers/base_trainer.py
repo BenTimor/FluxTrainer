@@ -55,7 +55,7 @@ class BaseTrainer:
             device = torch.device(
                 'cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.device = device
-        self.model = nn.DataParallel(model)
+        self.model = nn.DistributedDataParallel(model)
         self.train_loader = train_loader
         self.test_loader = test_loader
         self.optimizer = self.init_optimizer()
