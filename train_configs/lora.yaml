@@ -3,7 +3,7 @@ data_config:
   train_batch_size: 1
   num_workers: 2
   img_size: 512
-  img_dir: /root/imagesJSON/
+  img_dir: /home/user/imagesJSON/
   random_ratio: false # support multi crop preprocessing
 report_to: wandb
 train_batch_size: 1
